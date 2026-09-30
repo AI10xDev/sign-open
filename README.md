@@ -1,6 +1,52 @@
 # Sign Open
 
-Python live wallet-gate verification.
+**Web3-gated signing for open-source package management.**
+
+Sign Open explores using wallet signatures to authenticate contributors and gate
+privileged package-management operations without making open-source code private.
+The intended workflow lets maintainers prove control of a wallet before requesting
+permission to publish a package, approve a release, or manage a package namespace.
+Public source and package downloads can remain open while write operations require
+authentication and explicit authorization.
+
+## Project scope
+
+This repository currently provides a **Python wallet-gate verification client and
+offline tests**, not a package registry or a complete package manager. It checks a
+challenge/sign/verify flow against an existing wallet-gated demo API, including
+short-lived access tokens and rejection of replayed proofs.
+
+Package publishing, maintainer roles, registry integrations, and artifact-signing
+or provenance verification are **proposed integrations, not implemented features**.
+The demo authenticates a disposable wallet; it does not establish a maintainer's
+identity or permission to modify a package.
+
+## Proposed package-management workflow
+
+1. **Request a challenge.** A client supplies its wallet address and supported
+   chain ID to a registry's authentication service.
+2. **Review and sign.** The client checks the domain, URI, wallet, chain, nonce,
+   and expiration before signing the challenge. This proves wallet control without
+   sending an on-chain transaction.
+3. **Verify and create a session.** The service verifies the signature, consumes
+   the one-time challenge, and issues a short-lived access token.
+4. **Authorize a package operation.** The registry separately checks whether the
+   authenticated wallet is allowed to publish, approve releases, or administer the
+   requested namespace. A valid signature alone must not grant these permissions.
+5. **Record the result.** A registry integration could audit the wallet, package,
+   version, and authorized action while keeping credentials out of logs.
+
+An authentication signature is **not a signature over a package artifact**. Release
+integrity and provenance need a separate mechanism binding the package name,
+version, and content digest to an authorized signer. Wallet authentication also
+does not require token ownership, payment, or gas; no token-based entitlement check
+is implemented here.
+
+## Run the current verifier
+
+You need Python 3.10+ and an existing compatible wallet-gate API. This repository
+does not include the API server. The origin below is an example target; run live
+checks only against a service you are authorized to test.
 
 From the repository root (Python 3.10+):
 
@@ -38,7 +84,9 @@ server-side until expiry even after the script exits. This grants **demo API
 access only**, not account/subscription access, and does not test a browser wallet
 extension or ERC-1271 contract wallet.
 
-Offline tests (no live requests):
+## Offline tests
+
+Run the protocol and transport tests without making live requests:
 
 ```bash
 .venv/bin/python -m unittest discover -s . -p 'test_*.py' -v
