@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+*.out
+
+# Local task prompt (not application source)
+/sign_open
